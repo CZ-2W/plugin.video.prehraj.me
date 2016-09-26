@@ -21,11 +21,11 @@
 #  */
 
 import xbmcaddon
-from resources.lib.sosac import SosacContentProvider
-from resources.lib.sutils import XBMCSosac
+from resources.lib.prehrajme import SosacContentProvider
+from resources.lib.sutils import XBMCPrehrajme
 
-__scriptid__ = 'plugin.video.sosac.ph'
-__scriptname__ = 'sosac.ph'
+__scriptid__ = 'plugin.video.prehraj.me'
+__scriptname__ = 'prehraj.me'
 __addon__ = xbmcaddon.Addon(id=__scriptid__)
 __language__ = __addon__.getLocalizedString
 __set__ = __addon__.getSetting
@@ -35,4 +35,4 @@ settings = {'downloads': __set__('downloads'), 'quality': __set__(
 
 reverse_eps = __set__('order-episodes') == '0'
 
-XBMCSosac(SosacContentProvider(reverse_eps=reverse_eps), settings, __addon__).service()
+XBMCSosac(PrehrajmeContentProvider(reverse_eps=reverse_eps), settings, __addon__).service()
