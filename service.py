@@ -35,4 +35,4 @@ settings = {'downloads': __set__('downloads'), 'quality': __set__(
 
 reverse_eps = __set__('order-episodes') == '0'
 
-XBMCSosac(PrehrajmeContentProvider(reverse_eps=reverse_eps), settings, __addon__).service()
+XBMCPrehrajme(PrehrajmeContentProvider(reverse_eps=reverse_eps), settings, __addon__).service()
