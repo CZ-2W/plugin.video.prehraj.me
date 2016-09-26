@@ -44,4 +44,4 @@ if params == {}:
     xbmcutil.init_usage_reporting(__scriptid__)
 
 print("Running prehraj.me provider with params:", params)
-XBMCSosac(SosacContentProvider(reverse_eps=reverse_eps), settings, __addon__).run(params)
+XBMCPrehrajme(PrehrajmeContentProvider(reverse_eps=reverse_eps), settings, __addon__).run(params)
