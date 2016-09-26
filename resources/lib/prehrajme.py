@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 # /*
-# *      Copyright (C) 2015 Libor Zoubek + jondas
+# *      Copyright (C) 2016 2W fork L. Zoubek + jondas
 # *
 # *
 # *  This Program is free software; you can redistribute it and/or modify
@@ -26,8 +26,9 @@ import urllib2
 import cookielib
 import xml.etree.ElementTree as ET
 import sys
-
 import util
+import os
+import xbmcaddon
 from provider import ContentProvider, cached, ResolveException
 
 sys.setrecursionlimit(10000)
@@ -36,7 +37,9 @@ MOVIES_BASE_URL = "http://movies.prehraj.me"
 TV_SHOWS_BASE_URL = "http://tv.prehraj.me"
 MOVIES_A_TO_Z_TYPE = "movies-a-z"
 MOVIES_GENRE = "filmyxmlzanr.php"
+TV_SHOWS_GENRE = "serialyxmlzanr.php"
 GENRE_PARAM = "zanr"
+TV_SHOWS_GENRE_PARAM = "tv-shows-zanr"
 TV_SHOWS_A_TO_Z_TYPE = "tv-shows-a-z"
 XML_LETTER = "xmlpismeno"
 TV_SHOW_FLAG = "#tvshow#"
@@ -44,19 +47,20 @@ ISO_639_1_CZECH = "cs"
 MOST_POPULAR_TYPE = "most-popular"
 RECENTLY_ADDED_TYPE = "recently-added"
 SEARCH_TYPE = "search"
+MOVIES_LAST_VIEWED = "movies-last-viewed"
+PATH_LAST_VIEWED_MOVIES = os.path.join(os.path.dirname(__file__).replace("resources\lib","").replace("resources/lib",""), "lastviewed", "movies.txt")
+PATH_LAST_VIEWED_TV_SHOWS = os.path.join(os.path.dirname(__file__).replace("resources\lib","").replace("resources/lib",""), "lastviewed", "tvshows.txt")
 
-
-class SosacContentProvider(ContentProvider):
+class PrehrajmeContentProvider(ContentProvider):
     ISO_639_1_CZECH = None
     par = None
 
     def __init__(self, username=None, password=None, filter=None, reverse_eps=False):
-        ContentProvider.__init__(self, name='sosac.ph', base_url=MOVIES_BASE_URL, username=username,
+        ContentProvider.__init__(self, name='prehraj.me', base_url=MOVIES_BASE_URL, username=username,
                                  password=password, filter=filter)
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.LWPCookieJar()))
         urllib2.install_opener(opener)
         self.reverse_eps = reverse_eps
-
     def on_init(self):
         kodilang = self.lang or 'cs'
         if kodilang == ISO_639_1_CZECH or kodilang == 'sk':
@@ -70,17 +74,15 @@ class SosacContentProvider(ContentProvider):
     def categories(self):
         result = []
         for title, url in [
-            ("Movies", MOVIES_BASE_URL),
-            ("TV Shows", TV_SHOWS_BASE_URL),
-            ("Movies - by Genres", MOVIES_BASE_URL + "/" + MOVIES_GENRE),
-            ("Movies - Most popular",
-             MOVIES_BASE_URL + "/" + self.ISO_639_1_CZECH + MOST_POPULAR_TYPE),
-            ("TV Shows - Most popular",
-             TV_SHOWS_BASE_URL + "/" + self.ISO_639_1_CZECH + MOST_POPULAR_TYPE),
-            ("Movies - Recently added",
-             MOVIES_BASE_URL + "/" + self.ISO_639_1_CZECH + RECENTLY_ADDED_TYPE),
-            ("TV Shows - Recently added",
-             TV_SHOWS_BASE_URL + "/" + self.ISO_639_1_CZECH + RECENTLY_ADDED_TYPE)]:
+            (xbmcaddon.Addon().getLocalizedString(30110), MOVIES_BASE_URL),
+            (xbmcaddon.Addon().getLocalizedString(30111), MOVIES_BASE_URL + "/" + MOVIES_GENRE),
+            (xbmcaddon.Addon().getLocalizedString(30112), MOVIES_BASE_URL + "/" + self.ISO_639_1_CZECH + RECENTLY_ADDED_TYPE),
+            (xbmcaddon.Addon().getLocalizedString(30113), MOVIES_BASE_URL + "/" + self.ISO_639_1_CZECH + MOST_POPULAR_TYPE),
+            (xbmcaddon.Addon().getLocalizedString(30150), MOVIES_BASE_URL + "/" + self.ISO_639_1_CZECH + MOVIES_LAST_VIEWED),
+            (xbmcaddon.Addon().getLocalizedString(30114), TV_SHOWS_BASE_URL),
+            (xbmcaddon.Addon().getLocalizedString(30115), TV_SHOWS_BASE_URL + "/" + TV_SHOWS_GENRE),
+            (xbmcaddon.Addon().getLocalizedString(30116), TV_SHOWS_BASE_URL + "/" + self.ISO_639_1_CZECH + RECENTLY_ADDED_TYPE),
+            (xbmcaddon.Addon().getLocalizedString(30117), TV_SHOWS_BASE_URL + "/" + self.ISO_639_1_CZECH + MOST_POPULAR_TYPE)]:
             item = self.dir_item(title=title, url=url)
             if title == 'Movies' or title == 'TV Shows' or title == 'Movies - Recently added':
                 item['menu'] = {"[B][COLOR red]Add all to library[/COLOR][/B]": {
@@ -103,6 +105,29 @@ class SosacContentProvider(ContentProvider):
                 item['url'] = self.base_url + "/" + self.ISO_639_1_CZECH + url_type + "/" + letter
             result.append(item)
         return result
+
+    def genres_a_to_z(self):
+        result = []
+        for letter in ['0-9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'e', 'h', 'i', 'j', 'k', 'l', 'm',
+                       'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']:
+            item = self.dir_item(title=letter.upper())            
+            item['url'] = self.base_url + "/" + letter            
+            result.append(item)
+        return result
+
+    def genres_tv_shows(self):
+        result = []
+        i = 0
+        for letter in ["action","animation","biography","adventure","documentary","drama","fantasy","history",
+                       "horror","music","disaster","comedy","cartoons","krimi","crime","mystery","fairytales","psychological","realitytv",
+                       "family","romance","sci-fi","sport","thriller","war","western"]:
+            item = self.dir_item(title=xbmcaddon.Addon().getLocalizedString(30118+i))
+            item['url'] = TV_SHOWS_BASE_URL + "/cs/channel/" + letter
+            ###item['url'] = "http://tv.prehraj.me/cs/channel/action"
+            #http://tv.prehraj.me/cs/channel/
+            result.append(item)
+            i = i + 1
+        return result        
 
     @staticmethod
     def remove_flag_from_url(url, flag):
@@ -167,6 +192,13 @@ class SosacContentProvider(ContentProvider):
         print("Examining url", url)
         if MOVIES_GENRE in url:
             return self.list_by_genres(url)
+        if TV_SHOWS_BASE_URL + "/cs/channel/" in url:
+            if url[-2] == '/' or url[-2] == '-':
+              return self.list_tv_shows_by_letter(url)    
+            self.base_url = url
+            return self.genres_a_to_z()
+        if TV_SHOWS_BASE_URL + "/" + TV_SHOWS_GENRE in url:
+            return self.genres_tv_shows()  
         if self.is_most_popular(url):
             if "movie" in url:
                 return self.list_movies_by_letter(url)
@@ -181,8 +213,35 @@ class SosacContentProvider(ContentProvider):
                 return self.list_tv_recently_added(url)
         if self.is_search(url):
             return self.list_search(url)
+        if MOVIES_LAST_VIEWED in url:
+            filecontent = list()
+            f1 = open(PATH_LAST_VIEWED_MOVIES, 'r')
+            for line in f1.readlines():
+                    filecontent.append(line)
+            filecontent.insert(0,"Zero;http://movies.prehraj.me/filmyxmlpismeno.php?pismeno=x\n")
+            f1.close()
+            f2 = open(PATH_LAST_VIEWED_MOVIES, 'w')
+            for line in xrange(len(filecontent)):
+                    f2.write(filecontent[line])
+            f2.close()
+            
+            
+            arraylist = []            
+            file = open(PATH_LAST_VIEWED_MOVIES,'r')
+            with file as f:
+                for line in f:
+                    if ';' in line:
+                        li = str(line).split(';')
+                        item = self.dir_item(title=str(li[0]),url=str(li[1]))
+                        arraylist.append(item)
+            file.close()
+            return arraylist
+            #return [self.dir_item(title="done"+str(len(arraylist)), url="fail")]
+            #return []
         if self.is_base_url(url):
             self.base_url = url
+            if TV_SHOWS_GENRE in url:
+                return self.genres_tv_shows()
             if "movie" in url:
                 return self.a_to_z(MOVIES_A_TO_Z_TYPE)
             if "tv" in url:
@@ -211,17 +270,16 @@ class SosacContentProvider(ContentProvider):
             result = []
             page = util.request(url)
             data = util.substr(page, '<select name=\"zanr\">', '</select')
-            for s in re.finditer('<option value=\"([^\"]+)\">([^<]+)</option>', data,
-                                 re.IGNORECASE | re.DOTALL):
-                item = {'url': url + "?" + GENRE_PARAM + "=" +
-                        s.group(1), 'title': s.group(2), 'type': 'dir'}
+            for s in re.finditer('<option value=\"([^\"]+)\">([^<]+)</option>', data, re.IGNORECASE | re.DOTALL):
+                item = {'url': url + "?" + GENRE_PARAM + "=" + s.group(1), 'title': s.group(2), 'type': 'dir'}
                 self._filter(result, item)
             return result
-
+            
     def list_xml_letter(self, url):
         result = []
         data = util.request(url)
         tree = ET.fromstring(data)
+        
         for film in tree.findall('film'):
             item = self.video_item()
             try:
@@ -365,10 +423,10 @@ class SosacContentProvider(ContentProvider):
     def library_movies_all_xml(self):
         page = util.request('http://tv.prehraj.me/filmyxml.php')
         pagedata = util.substr(page, '<select name=\"rok\">', '</select>')
-        pageitems = re.finditer('<option value=\"(?P<url>[^\"]+)\">(?P<name>[^<]+)</option>',
+        pageitems = re.finditer('<option value=\"(?P<url>[^\"]+)\">(?P<name>[^<]+)</option>', 
                                 pagedata, re.IGNORECASE | re.DOTALL)
         pagetotal = float(len(list(pageitems)))
-        pageitems = re.finditer('<option value=\"(?P<url>[^\"]+)\">(?P<name>[^<]+)</option>',
+        pageitems = re.finditer('<option value=\"(?P<url>[^\"]+)\">(?P<name>[^<]+)</option>', 
                                 pagedata, re.IGNORECASE | re.DOTALL)
         print("PocetRoku: ", pagetotal)
         pagenum = 0
@@ -390,7 +448,7 @@ class SosacContentProvider(ContentProvider):
                 print("percento: ", int(perc))
                 if self.parent.dialog.iscanceled():
                     return
-                item = self.video_item()
+                    item = self.video_item()
                 try:
                     if ISO_639_1_CZECH in self.ISO_639_1_CZECH:
                         title = film.findtext('nazevcs').encode('utf-8')
@@ -516,8 +574,6 @@ class SosacContentProvider(ContentProvider):
         return items
 
     def _url(self, url):
-        # DirtyFix nefunkcniho downloadu: Neznam kod tak se toho zkusenejsi chopte
-        # a prepiste to lepe :)
         if '&authorize=' in url:
             return url
         else:
