@@ -23,11 +23,11 @@
 import xbmcaddon
 import xbmcutil
 import util
-from resources.lib.sosac import SosacContentProvider
-from resources.lib.sutils import XBMCSosac
+from resources.lib.prehrajme import SosacContentProvider
+from resources.lib.sutils import XBMCPrehrajme
 
-__scriptid__ = 'plugin.video.sosac.ph'
-__scriptname__ = 'sosac.ph'
+__scriptid__ = 'plugin.video.prehraj.me'
+__scriptname__ = 'prehraj.me'
 __addon__ = xbmcaddon.Addon(id=__scriptid__)
 __language__ = __addon__.getLocalizedString
 __set__ = __addon__.getSetting
@@ -43,5 +43,5 @@ params = util.params()
 if params == {}:
     xbmcutil.init_usage_reporting(__scriptid__)
 
-print("Running sosac provider with params:", params)
+print("Running prehraj.me provider with params:", params)
 XBMCSosac(SosacContentProvider(reverse_eps=reverse_eps), settings, __addon__).run(params)
