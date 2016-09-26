@@ -23,7 +23,7 @@
 import xbmcaddon
 import xbmcutil
 import util
-from resources.lib.prehrajme import SosacContentProvider
+from resources.lib.prehrajme import PrehrajmeContentProvider
 from resources.lib.sutils import XBMCPrehrajme
 
 __scriptid__ = 'plugin.video.prehraj.me'
