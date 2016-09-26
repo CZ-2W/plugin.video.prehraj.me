@@ -13,7 +13,7 @@ import datetime
 import urllib
 
 
-class XBMCSosac(xbmcprovider.XBMCMultiResolverContentProvider):
+class XBMCPrehrajme(xbmcprovider.XBMCMultiResolverContentProvider):
     last_run = 0
     sleep_time = 1000 * 1 * 60
     subs = None
@@ -45,7 +45,7 @@ class XBMCSosac(xbmcprovider.XBMCMultiResolverContentProvider):
         return ''.join(c for c in cleanedFilename if c in validFilenameChars)
 
     def service(self):
-        util.info("SOSAC Service Started")
+        util.info("PREHRAJME Service Started")
         try:
             sleep_time = int(self.getSetting("start_sleep_time")) * 1000 * 60
         except:
@@ -71,7 +71,7 @@ class XBMCSosac(xbmcprovider.XBMCMultiResolverContentProvider):
                 self.last_run = time.time()
                 self.cache.set("subscription.last_run", str(self.last_run))
             self.sleep(self.sleep_time)
-        util.info("SOSAC Shutdown")
+        util.info("PREHRAJME Shutdown")
 
     def showNotification(self, title, message, time=1000):
         xbmcgui.Dialog().notification(self.encode(title), self.encode(message), time=time,
@@ -81,12 +81,12 @@ class XBMCSosac(xbmcprovider.XBMCMultiResolverContentProvider):
     def evalSchedules(self):
         if not self.scanRunning() and not self.isPlaying():
             notified = False
-            util.info("SOSAC Loading subscriptions")
+            util.info("PREHRAJME Loading subscriptions")
             subs = self.get_subs()
             new_items = False
             for url, sub in subs.iteritems():
                 if xbmc.abortRequested:
-                    util.info("SOSAC Exitting")
+                    util.info("PREHRAJME Exitting")
                     return
                 if self.provider.is_tv_shows_url(url):
                     if self.scanRunning() or self.isPlaying():
@@ -99,7 +99,7 @@ class XBMCSosac(xbmcprovider.XBMCMultiResolverContentProvider):
                             if not notified:
                                 self.showNotification('Subscription', 'Chcecking')
                                 notified = True
-                            util.debug("SOSAC Refreshing " + url)
+                            util.debug("PREHRAJME Refreshing " + url)
                             new_items |= self.run_custom({
                                 'action': 'add-to-library',
                                 'update': True,
@@ -110,12 +110,12 @@ class XBMCSosac(xbmcprovider.XBMCMultiResolverContentProvider):
                             self.sleep(3000)
                         else:
                             n = (next_check - time.time()) / 3600
-                            util.debug("SOSAC Skipping " + url + " , next check in %dh" % n)
+                            util.debug("PREHRAJME Skipping " + url + " , next check in %dh" % n)
             if new_items:
                 xbmc.executebuiltin('UpdateLibrary(video)')
             notified = False
         else:
-            util.info("SOSAC Scan skipped")
+            util.info("PREHRAJME Scan skipped")
 
     def isPlaying(self):
         return xbmc.Player().isPlaying()
@@ -149,7 +149,7 @@ class XBMCSosac(xbmcprovider.XBMCMultiResolverContentProvider):
             params['refresh'] = str(self.getSetting("refresh_time"))
         sub = {'name': params['name'], 'refresh': params['refresh']}
         sub['last_run'] = time.time()
-        arg = {"play": params['url'], 'cp': 'sosac.ph', "title": sub['name']}
+        arg = {"play": params['url'], 'cp': 'prehraj.me', "title": sub['name']}
         item_url = xbmcutil._create_plugin_url(arg, 'plugin://' + self.addon_id + '/')
         print("item: ", item_url, params)
         new_items = False
@@ -184,7 +184,7 @@ class XBMCSosac(xbmcprovider.XBMCMultiResolverContentProvider):
             for itm in list:
                 nfo = re.search('[^\d+](?P<season>\d+)[^\d]+(?P<episode>\d+)',
                                 itm['title'], re.IGNORECASE | re.DOTALL)
-                arg = {"play": itm['url'], 'cp': 'sosac.ph',
+                arg = {"play": itm['url'], 'cp': 'prehraj.me',
                        "title": itm['epname']}
                 """
                 info = ''.join(('<episodedetails><season>', nfo.group('season'),
@@ -226,7 +226,7 @@ class XBMCSosac(xbmcprovider.XBMCMultiResolverContentProvider):
                     return True
                 return False
             if params['action'] == 'add-all-to-library':
-                self.dialog.create('sosac', 'Add all to library')
+                self.dialog.create('prehrajme', 'Add all to library')
                 self.dialog.update(0)
                 if params['title'] == 'Movies':
                     self.provider.library_movies_all_xml()
