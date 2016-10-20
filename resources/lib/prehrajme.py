@@ -189,7 +189,7 @@ class PrehrajmeContentProvider(ContentProvider):
         return url.replace(TV_SHOW_FLAG, "", 1)
 
     def list(self, url):
-        util.info("Examining url", url)
+        util.info("Examining url" + url)
         if MOVIES_GENRE in url:
             return self.list_by_genres(url)
         if TV_SHOWS_BASE_URL + "/cs/channel/" in url:
