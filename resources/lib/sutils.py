@@ -151,7 +151,7 @@ class XBMCPrehrajme(xbmcprovider.XBMCMultiResolverContentProvider):
         sub['last_run'] = time.time()
         arg = {"play": params['url'], 'cp': 'prehraj.me', "title": sub['name']}
         item_url = xbmcutil._create_plugin_url(arg, 'plugin://' + self.addon_id + '/')
-        print("item: ", item_url, params)
+        util.info("item: " + item_url + " | " + str(params))
         new_items = False
         # self.showNotification('Linking', params['name'])
 
@@ -249,7 +249,7 @@ class XBMCPrehrajme(xbmcprovider.XBMCMultiResolverContentProvider):
                     xbmcvfs.mkdirs(dir)
                 except Exception, e:
                     error = True
-                    print('Failed to create directory 1', dir)
+                    util.error('Failed to create directory 1: ' + dir)
 
             if not xbmcvfs.exists(item_path):
                 try:
@@ -258,7 +258,7 @@ class XBMCPrehrajme(xbmcprovider.XBMCMultiResolverContentProvider):
                     file_desc.close()
                     new = True
                 except Exception, e:
-                    print('Failed to create .strm file: ', item_path, e)
+                    util.error('Failed to create .strm file: ' + item_path + " | " + str(e))
                     error = True
         else:
             error = True
